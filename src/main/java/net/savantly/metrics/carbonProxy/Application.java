@@ -15,13 +15,21 @@ import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import io.hawt.springboot.EnableHawtio;
+import io.hawt.web.AuthenticationFilter;
+
+@EnableHawtio
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
     public static Logger logger = LoggerFactory.getLogger(Application.class);
-
+    
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args).close();
+    	if(!System.getProperties().containsKey(AuthenticationFilter.HAWTIO_AUTHENTICATION_ENABLED)){
+    		System.setProperty(AuthenticationFilter.HAWTIO_AUTHENTICATION_ENABLED, "false");
+    	}
+    	
+        SpringApplication.run(Application.class, args);
     }
 
     @Autowired
