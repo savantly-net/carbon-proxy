@@ -18,16 +18,20 @@ Settings -
 server.port=8800
 
 # The local port and ip for the proxy to listen on
-carbonProxy.server-port=2013
+carbonProxy.server-port=2003
 carbonProxy.server-address=0.0.0.0
 
 # Where we relay the messages to
 carbonProxy.carbon-port=2003
 carbonProxy.carbon-host=localhost
 
+# Channel polling frequency in milliseconds
+carbonProxy.polling-frequency=500
+
 # Kafka Configuration
-spring.kafka.consumer.group-id=foo
-spring.kafka.consumer.auto-offset-reset=earliest
+carbonProxy.kafka.enabled=true
+carbonProxy.kafka.topic=metrics
+carbonProxy.kafka.brokers=localhost:9092
 
 # Logging levels
 logging.level.org.springframework.integration=INFO
@@ -35,7 +39,7 @@ logging.level.net.savantly=DEBUG
 
 # JMX
 endpoints.jmx.domain=net.savantly.metrics.carbonProxy
-endpoints.jmx.unique-names=true
+endpoints.jmx.unique-names=false
 
 # Hawtio
 hawtio.authentication-enabled=false
