@@ -21,7 +21,7 @@ public class MetricDefinition {
 	private String[] tags;
 	private long lastUpdate;
 	private int partition;
-	private long value;
+	private double value;
 	
 	public enum Style {
 		Metric_1_0,
@@ -55,7 +55,7 @@ public class MetricDefinition {
 			throw new RuntimeException(String.format("Metric string is missing %s fields: %s", fieldCount - parts.length, str));
 		}
 
-		metricDefinition.setValue(Long.parseLong(parts[1]));
+		metricDefinition.setValue(Double.parseDouble(parts[1]));
 		metricDefinition.setLastUpdate(Long.parseLong(parts[2]));
 		metricDefinition.setName(parts[0]);
 		metricDefinition.setMetric(str);
@@ -154,11 +154,11 @@ public class MetricDefinition {
 		this.partition = partition;
 	}
 
-	public long getValue() {
+	public double getValue() {
 		return value;
 	}
 
-	public void setValue(long value) {
+	public void setValue(double value) {
 		this.value = value;
 	}
 
