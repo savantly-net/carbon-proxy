@@ -22,7 +22,7 @@ public class KafkaMetricConsumerConfiguration {
 
 	@Value("${kafka.bootstrap-servers}")
 	private String bootstrapServers;
-	@Value("${kafka.consumer.group-id")
+	@Value("${kafka.consumer.group-id}")
 	private String groupId;
 
 	@Bean

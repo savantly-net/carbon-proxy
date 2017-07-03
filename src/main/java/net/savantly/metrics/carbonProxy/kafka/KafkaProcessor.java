@@ -1,4 +1,4 @@
-package net.savantly.metrics.carbonProxy.processors;
+package net.savantly.metrics.carbonProxy.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
