@@ -2,6 +2,7 @@ package net.savantly.metrics.carbonProxy.kafka;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -16,6 +17,10 @@ import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
 public class KafkaMetricProducerMessageHandler implements MessageHandler {
 	private static final Logger log = LoggerFactory.getLogger(KafkaMetricProducerMessageHandler.class);
+	private final CountDownLatch latch = new CountDownLatch(2);
+	public CountDownLatch getLatch(){
+		return latch;
+	}
 
 	private KafkaMetricProducer producer;
 	private KafkaMetricProducerConfiguration producerConfiguration;
@@ -35,14 +40,23 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 				regexPatterns.put(key, Pattern.compile(f.getValue()));
 			}
 		}
+		latch.countDown();
 	}
 
 	@Override
 	public void handleMessage(Message<?> message) throws MessagingException {
 		MetricDefinition metricDefinition = (MetricDefinition) message.getPayload();
-		log.debug("Sending message '{}'", metricDefinition.toString());
+		
+		// If the message isn't valid then don't send it
+		if(metricDefinition == null || metricDefinition.getId() == null){
+			log.debug("skipping invalid metric '{}'", metricDefinition);
+			latch.countDown();
+			return;
+		}
+		
 		try {
 			if (filters.isEmpty()) {
+				log.debug("Sending message '{}'", metricDefinition.toString());
 				producer.send(metricDefinition);
 			} else {
 				boolean matched = false;
@@ -57,6 +71,8 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 			}
 		} catch (Exception e) {
 			log.error("Failed to send message", e);
+		} finally {
+			latch.countDown();
 		}
 	}
 

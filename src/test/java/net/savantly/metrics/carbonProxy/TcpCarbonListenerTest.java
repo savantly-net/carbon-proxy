@@ -18,42 +18,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class TcpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(TcpCarbonListenerTest.class);
+	private Random random = new Random();
 
 	@Autowired
 	ApplicationConfiguration carbonProxy;
+	@Autowired
+	KafkaMetricProducerMessageHandler handler;
 
 
 	@Test
 	public void testPlainText() throws IOException, InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		testOneConnection(1);
-		//latch.await(3, TimeUnit.SECONDS);
-
-/*		while (!clientSocket.isInputShutdown() && !clientSocket.isClosed()) {
-
-			if (inFromServer.available() > 0) {
-				// available stream to be read
-				int length = inFromServer.available();
-
-				// create buffer
-				byte[] buf = new byte[length];
-
-				// read the full data into the buffer
-				inFromServer.readFully(buf);
-				clientSocket.shutdownInput();
-				clientSocket.close();
-
-				String response = new String(buf);
-				log.info(response);
-			}
-		}*/
+		long id = 1;
+		testOneConnection(id, createMultiMetricPayload(id));
+		handler.getLatch().await(10, TimeUnit.SECONDS);
+	}
+	
+	@Test
+	public void testPayloadWithMissingField() throws IOException, InterruptedException {
+		long id = 2;
+		testOneConnection(id, createSingleMetricPayloadWithMissingField(id));
+		handler.getLatch().await(10, TimeUnit.SECONDS);
+	}
+	
+	@Test
+	public void testPayloadWithCrLf() throws IOException, InterruptedException {
+		long id = 3;
+		testOneConnection(id, createMultiMetricPayloadWithCrLf(id ));
+		handler.getLatch().await(10, TimeUnit.SECONDS);
 	}
 	
 	@Test
@@ -68,7 +71,8 @@ public class TcpCarbonListenerTest {
 				String threadName = Thread.currentThread().getName();
 			    log.debug("Starting new connection test");
 			    try {
-					testOneConnection(Thread.currentThread().getId());
+			    	long threadId = Thread.currentThread().getId();
+					testOneConnection(threadId, createMultiMetricPayload(threadId));
 				} catch (Exception e) {
 					log.error(threadName, e);
 				}
@@ -78,6 +82,7 @@ public class TcpCarbonListenerTest {
 		
 		try {
 		    log.debug("attempt to shutdown executor");
+			handler.getLatch().await(10, TimeUnit.SECONDS);
 		    executor.shutdown();
 		    executor.awaitTermination(5, TimeUnit.SECONDS);
 		}
@@ -96,23 +101,40 @@ public class TcpCarbonListenerTest {
 	}
 	
 
-	private void testOneConnection(long l) throws IOException, InterruptedException {
-		Random r = new Random();
+	private void testOneConnection(long l, String payload) throws IOException, InterruptedException {
 		Socket clientSocket = new Socket("localhost", carbonProxy.getServerPort());
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		//DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 10; i++) {
-			String msg = String.format("test.relay.tcp-%s.count %s %s\n",l, r.nextInt(10), DateTime.now().getMillis()/1000-(i*30));
-			sb.append(msg);
-		}
-
-		log.info("Writing msg to tcp socket: " + sb.toString());
-		outToServer.write(sb.toString().getBytes());
+		outToServer.write(payload.getBytes());
 		
 		clientSocket.shutdownOutput();
 		clientSocket.shutdownInput();
 		clientSocket.close();
+	}
+	
+	private String createMultiMetricPayload(long id){
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10; i++) {
+			String msg = String.format("test.relay.tcp-%s.count %s %s\n", id, random.nextInt(10), DateTime.now().getMillis()/1000-(i*30));
+			sb.append(msg);
+		}
+		return sb.toString();
+	}
+	
+	private String createMultiMetricPayloadWithCrLf(long id){
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10; i++) {
+			String msg = String.format("test.relay.tcp-%s.count %s %s\r\n", id, random.nextInt(10), DateTime.now().getMillis()/1000-(i*30));
+			sb.append(msg);
+		}
+		return sb.toString();
+	}
+	
+	private String createSingleMetricPayload(long id){
+		return String.format("test.relay.tcp-%s.count %s %s\n", id, random.nextInt(10), DateTime.now().getMillis()/1000);
+	}
+	
+	private String createSingleMetricPayloadWithMissingField(long id){
+		return String.format("test.relay.tcp-%s.count %s\n", id, random.nextInt(10));
 	}
 
 }

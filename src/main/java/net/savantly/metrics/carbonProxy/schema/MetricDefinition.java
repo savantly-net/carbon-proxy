@@ -52,7 +52,11 @@ public class MetricDefinition {
 		int fieldCount = 3;
 		String[] parts = str.split("\\s");
 		if(parts.length < fieldCount){
-			throw new RuntimeException(String.format("Metric string is missing %s fields: %s", fieldCount - parts.length, str));
+			if(log.isDebugEnabled()){
+				throw new RuntimeException(String.format("Metric string is missing %s fields: %s", fieldCount - parts.length, str));
+			} else {
+				return null;
+			}
 		}
 
 		metricDefinition.setValue(Double.parseDouble(parts[1]));
