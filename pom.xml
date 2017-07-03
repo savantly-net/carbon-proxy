@@ -17,6 +17,9 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.4.RELEASE</version>
 	</parent>
+	<properties>
+		<spring-kafka.version>1.2.2.RELEASE</spring-kafka.version>
+	</properties>
 
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
@@ -106,13 +109,19 @@
 		</dependency>
 
 
-
-		<!-- TEST -->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
-			<version>1.2.2.RELEASE</version>
 		</dependency>
+
+		<!-- TEST -->
+		<!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka-test -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -158,4 +167,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>repository.spring.release</id>
+			<name>Spring GA Repository</name>
+			<url>http://repo.spring.io/release</url>
+		</repository>
+	</repositories>
 </project>
