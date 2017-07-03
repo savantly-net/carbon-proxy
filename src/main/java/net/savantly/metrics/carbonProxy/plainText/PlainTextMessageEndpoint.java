@@ -5,15 +5,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Splitter;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.messaging.MessageChannel;
 
@@ -25,17 +21,11 @@ public class PlainTextMessageEndpoint {
 		return latch;
 	}
 	
-	@Bean("publisherChannel")
+/*	@Bean("publisherChannel")
 	public MessageChannel publisherChannel(){
 		return MessageChannels.publishSubscribe().get();
-	}
-	
-	@Bean("multiMetricOutputChannel")
-	public MessageChannel multiMetricOutputChannel(){
-		DirectChannel channel = MessageChannels.direct().get();
-		return channel;
-	}
-	
+	}*/
+
 
 	@Transformer(inputChannel = "byteArrayChannel", outputChannel = "multiMetricInputChannel")
 	public String convertBytesToString(byte[] bytes) {
@@ -47,7 +37,7 @@ public class PlainTextMessageEndpoint {
 	
 
 	
-	@Splitter(inputChannel="multiMetricInputChannel", outputChannel="multiMetricOutputChannel")
+	@Splitter(inputChannel="multiMetricInputChannel", outputChannel="singleMetricInputChannel")
 	public String[] splitMultiMetricMessage(String multiMetricString){
 		String[] messagePayloads = multiMetricString.split("\\n");
 		if(messagePayloads.length > 1 && log.isDebugEnabled()){
@@ -57,14 +47,14 @@ public class PlainTextMessageEndpoint {
 		return messagePayloads;
 	}
 	
-	@Bean
+/*	@Bean
 	public IntegrationFlow plainTextIntegrationFlow(
 			@Qualifier("multiMetricOutputChannel") MessageChannel multiMetricOutputChannel,
 			@Qualifier("publisherChannel") MessageChannel publisherChannel) {
 		return IntegrationFlows.from(multiMetricOutputChannel)
 				.channel("publisherChannel")
 				.get();
-	}
+	}*/
 
 
 	

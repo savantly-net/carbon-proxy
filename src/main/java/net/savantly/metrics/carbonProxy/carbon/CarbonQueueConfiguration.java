@@ -1,6 +1,7 @@
 package net.savantly.metrics.carbonProxy.carbon;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.QueueChannel;
@@ -13,7 +14,8 @@ import org.springframework.messaging.MessageChannel;
 public class CarbonQueueConfiguration {
 
 	@Autowired
-	private MessageChannel publisherChannel;
+	@Qualifier("multiMetricInputChannel")
+	private MessageChannel multiMetricInputChannel;
 	
 	@Bean("carbonQueue")
 	public QueueChannel carbonQueue(){
@@ -23,7 +25,7 @@ public class CarbonQueueConfiguration {
 	
 	@Bean
 	public IntegrationFlow carbonQueueFlow() {
-		return IntegrationFlows.from(publisherChannel)
+		return IntegrationFlows.from(multiMetricInputChannel)
 				.channel("carbonQueue")
 				.channel("carbonUdpRelayChannel")
 				.get();

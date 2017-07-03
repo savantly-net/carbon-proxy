@@ -20,7 +20,8 @@ public class KafkaProcessor {
 	private static final Logger log = LoggerFactory.getLogger(KafkaProcessor.class);
 	
 	@Autowired
-	private MessageChannel publisherChannel;
+	@Qualifier("singleMetricInputChannel")
+	private MessageChannel singleMetricInputChannel;
 	@Autowired
 	@Qualifier("kafkaMetricProducerMessageHandler")
 	private MessageHandler handler;
@@ -28,7 +29,7 @@ public class KafkaProcessor {
 	
 	@Bean
 	public IntegrationFlow kafkaIntegrationFlow() {
-		return IntegrationFlows.from(publisherChannel)
+		return IntegrationFlows.from(singleMetricInputChannel)
 				.<String, MetricDefinition>transform(S -> new MetricDefinition(S, MetricDefinition.Style.Metric_1_0))
 				.handle(handler)
 				.get();

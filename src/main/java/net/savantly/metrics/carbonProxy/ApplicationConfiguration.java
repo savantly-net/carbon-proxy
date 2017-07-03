@@ -3,8 +3,11 @@ package net.savantly.metrics.carbonProxy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.channel.PublishSubscribeChannel;
+import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.messaging.MessageChannel;
 
 @Configuration
 @ConfigurationProperties("carbonProxy")
@@ -21,6 +24,19 @@ public class ApplicationConfiguration {
 	@Bean(name = PollerMetadata.DEFAULT_POLLER)
 	public PollerMetadata poller() {
 		return Pollers.fixedRate(pollingFrequency).get();
+	}
+	
+	
+	@Bean("singleMetricInputChannel")
+	public MessageChannel singleMetricInputChannel(){
+		PublishSubscribeChannel channel = MessageChannels.publishSubscribe().get();
+		return channel;
+	}
+	
+	@Bean("multiMetricInputChannel")
+	public MessageChannel multiMetricInputChannel(){
+		PublishSubscribeChannel channel = MessageChannels.publishSubscribe().get();
+		return channel;
 	}
 	
 	public int getServerPort() {

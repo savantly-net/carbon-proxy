@@ -29,6 +29,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumer;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumerConfiguration;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerConfiguration;
@@ -38,6 +39,7 @@ import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { 
 		KafkaProcessorTest.TestConfiguration.class, 
+		ApplicationConfiguration.class,
 		KafkaMetricProducerConfiguration.class,
 		KafkaMetricConsumerConfiguration.class,
 		KafkaProcessor.class })
@@ -47,8 +49,8 @@ public class KafkaProcessorTest {
 	public static final String TOPIC = "metrics";
 
 	@Autowired
-	@Qualifier("publisherChannel")
-	private MessageChannel publisherChannel;
+	@Qualifier("singleMetricInputChannel")
+	private MessageChannel singleMetricInputChannel;
 	
 	@Autowired
 	private KafkaMetricConsumer receiver;
@@ -102,12 +104,12 @@ public class KafkaProcessorTest {
 		};
 
 		try {
-			publisherChannel.send(message);
+			singleMetricInputChannel.send(message);
 		} catch (Exception e) {
 			log.error("Failed to send message", e);
 		} finally {
-			receiver.getLatch().await(5000, TimeUnit.MILLISECONDS);
-		    Assert.assertEquals(receiver.getLatch().getCount(), 0);
+			receiver.getLatch().await(10, TimeUnit.SECONDS);
+		    Assert.assertEquals(0, receiver.getLatch().getCount());
 		}
 	}
 
@@ -119,11 +121,6 @@ public class KafkaProcessorTest {
 		public static String kafkaBootstrapServers;
 		{
 			System.setProperty("kafka.consumer.enabled", "true");
-		}
-
-		@Bean("publisherChannel")
-		public MessageChannel publisherChannel() {
-			return MessageChannels.publishSubscribe().get();
 		}
 	}
 
