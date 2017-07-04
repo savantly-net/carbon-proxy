@@ -4,12 +4,12 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,13 +17,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class UdpCarbonListenerTest {
 
-	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);
+	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	
+	
+	@Autowired
+	KafkaMetricProducerMessageHandler handler;
 	
 	@Value("${carbonProxy.server-port}")
 	int port;
@@ -31,6 +39,8 @@ public class UdpCarbonListenerTest {
 	@Test
 	public void testSingle() throws IOException, InterruptedException {
 		testOneConnection(1);
+		handler.getLatch().await(10, TimeUnit.SECONDS);
+		Assert.assertEquals(handler.getLatch().getCount(), 0);
 	}
 	@Test
 	public void testMulti(){
@@ -54,6 +64,7 @@ public class UdpCarbonListenerTest {
 		
 		try {
 		    log.debug("attempt to shutdown executor");
+			handler.getLatch().await(10, TimeUnit.SECONDS);
 		    executor.shutdown();
 		    executor.awaitTermination(5, TimeUnit.SECONDS);
 		}
@@ -67,6 +78,7 @@ public class UdpCarbonListenerTest {
 		    }
 		    executor.shutdownNow();
 		    log.debug("shutdown finished");
+		    Assert.assertEquals(handler.getLatch().getCount(), 0);
 		}
 
 	}
