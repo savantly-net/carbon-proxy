@@ -48,7 +48,7 @@ public class UdpCarbonListenerTest {
 	public void testMulti(){
 		
 		int threadPoolSize = 10;
-		int loopSize = 10;
+		int loopSize = 5;
 		
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		for (int i = 0; i < loopSize; i++) {
@@ -68,7 +68,7 @@ public class UdpCarbonListenerTest {
 		    log.debug("attempt to shutdown executor");
 			handler.getLatch().await(10, TimeUnit.SECONDS);
 		    executor.shutdown();
-		    executor.awaitTermination(5, TimeUnit.SECONDS);
+		    executor.awaitTermination(10, TimeUnit.SECONDS);
 		}
 		catch (InterruptedException e) {
 			log.debug("tasks interrupted");
