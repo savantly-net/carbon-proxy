@@ -1,4 +1,4 @@
-package net.savantly.metrics.carbonProxy;
+package net.savantly.metrics.carbonProxy.udp;
 
 import static org.junit.Assert.fail;
 
@@ -21,7 +21,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import net.savantly.metrics.carbonProxy.Application;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
+import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)

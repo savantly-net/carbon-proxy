@@ -15,6 +15,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.messaging.MessageHandler;
 
+import net.savantly.metrics.carbonProxy.filter.FilterService;
 import net.savantly.metrics.carbonProxy.filter.MetricFilter;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
@@ -54,8 +55,8 @@ public class KafkaMetricProducerConfiguration {
 	}
 	
 	@Bean
-	public MessageHandler kafkaMetricProducerMessageHandler(KafkaMetricProducer producer){
-		return new KafkaMetricProducerMessageHandler(producer, this);
+	public MessageHandler kafkaMetricProducerMessageHandler(KafkaMetricProducer producer, FilterService filterService){
+		return new KafkaMetricProducerMessageHandler(producer, filterService);
 	}
 
 	public Map<String, MetricFilter> getFilters() {

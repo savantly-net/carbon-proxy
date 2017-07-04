@@ -1,4 +1,4 @@
-package net.savantly.metrics.carbonProxy;
+package net.savantly.metrics.carbonProxy.test.utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

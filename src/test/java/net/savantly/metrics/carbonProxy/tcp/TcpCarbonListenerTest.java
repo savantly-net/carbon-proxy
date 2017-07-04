@@ -1,4 +1,4 @@
-package net.savantly.metrics.carbonProxy;
+package net.savantly.metrics.carbonProxy.tcp;
 
 import static org.junit.Assert.fail;
 
@@ -22,6 +22,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import net.savantly.metrics.carbonProxy.Application;
+import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
