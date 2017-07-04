@@ -34,6 +34,7 @@ import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumer;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumerConfiguration;
 import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerConfiguration;
 import net.savantly.metrics.carbonProxy.kafka.KafkaProcessor;
+import net.savantly.metrics.carbonProxy.schema.Metric;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
 @RunWith(SpringJUnit4ClassRunner.class)

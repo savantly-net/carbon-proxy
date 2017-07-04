@@ -21,13 +21,9 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 	private KafkaMetricProducer producer;
 	private FilterService filterService;
 
-
-
 	public KafkaMetricProducerMessageHandler(KafkaMetricProducer producer, FilterService filterService) {
 		this.producer = producer;
 		this.filterService = filterService;
-		
-
 		latch.countDown();
 	}
 

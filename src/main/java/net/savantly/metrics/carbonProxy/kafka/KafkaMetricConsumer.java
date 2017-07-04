@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.carbonProxy.schema.Metric;
 
 public class KafkaMetricConsumer {
 
@@ -21,7 +21,7 @@ public class KafkaMetricConsumer {
 	  }
 
 	  @KafkaListener(topics = "${kafka.consumer.topic}")
-	  public void receive(MetricDefinition metricDefinition) {
+	  public void receive(Metric metricDefinition) {
 	    log.debug("received metricDefinition='{}'", metricDefinition.toString());
 	    latch.countDown();
 	  }

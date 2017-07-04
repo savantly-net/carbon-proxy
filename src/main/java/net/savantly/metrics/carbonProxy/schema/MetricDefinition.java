@@ -9,7 +9,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetricDefinition {
+public class MetricDefinition implements Metric{
 	private final static Logger log = LoggerFactory.getLogger(MetricDefinition.class);
 	
 	private String id;
@@ -43,12 +43,12 @@ public class MetricDefinition {
 	}
 	
 	// Factory
-	public static MetricDefinition Factory(String str, Style style){
+	public static Metric Factory(String str, Style style){
 		return new MetricDefinition(str, style);
 	}
 	
 	// Private methods
-	private static MetricDefinition fromMetric_1_0(String str, MetricDefinition metricDefinition){
+	private static Metric fromMetric_1_0(String str, MetricDefinition metricDefinition){
 		int fieldCount = 3;
 		String[] parts = str.split("\\s");
 		if(parts.length < fieldCount){
@@ -94,6 +94,7 @@ public class MetricDefinition {
 		this.id = id;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -102,6 +103,7 @@ public class MetricDefinition {
 		this.name = name;
 	}
 
+	@Override
 	public String getMetric() {
 		return metric;
 	}

@@ -29,7 +29,6 @@ public class CarbonRelayConfiguration {
 	public MessageHandler tcpOutGate(AbstractClientConnectionFactory connectionFactory) {
 		TcpOutboundGateway gate = new TcpOutboundGateway();
 		gate.setConnectionFactory(connectionFactory);
-		//gate.setOutputChannelName("carbonTcpRelayChannel");
 		return gate;
 	}
 

@@ -12,6 +12,7 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import net.savantly.metrics.carbonProxy.schema.Metric;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
 @Configuration
@@ -30,7 +31,7 @@ public class KafkaProcessor {
 	@Bean
 	public IntegrationFlow kafkaIntegrationFlow() {
 		return IntegrationFlows.from(singleMetricInputChannel)
-				.<String, MetricDefinition>transform(S -> new MetricDefinition(S, MetricDefinition.Style.Metric_1_0))
+				.<String, Metric>transform(S -> new MetricDefinition(S, MetricDefinition.Style.Metric_1_0))
 				.handle(handler)
 				.get();
 	}
