@@ -5,11 +5,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Splitter;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.messaging.MessageChannel;
 
@@ -21,13 +21,16 @@ public class PlainTextMessageEndpoint {
 		return latch;
 	}
 	
-/*	@Bean("publisherChannel")
-	public MessageChannel publisherChannel(){
-		return MessageChannels.publishSubscribe().get();
-	}*/
+	@Value("${preProcessorQueueChannel.size}")
+	int preProcessorQueueChannelSize;
+	
+	@Bean("preProcessorQueueChannel")
+	public MessageChannel preProcessorQueueChannel(){
+		return MessageChannels.queue(preProcessorQueueChannelSize).get();
+	}
 
 
-	@Transformer(inputChannel = "byteArrayChannel", outputChannel = "multiMetricInputChannel")
+	@Transformer(inputChannel = "preProcessorQueueChannel", outputChannel = "multiMetricInputChannel")
 	public String convertBytesToString(byte[] bytes) {
 		String str = new String(bytes);
 		log.debug(str);

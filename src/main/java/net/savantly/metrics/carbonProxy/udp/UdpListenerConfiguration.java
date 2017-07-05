@@ -34,7 +34,7 @@ public class UdpListenerConfiguration {
 	@Bean
 	public IntegrationFlow inboundUdpFlow() {
 	    return IntegrationFlows.from("inboundUdpChannel")
-	            .channel("byteArrayChannel")
+	            .channel("preProcessorQueueChannel")
 	            .get();
 	}
 }

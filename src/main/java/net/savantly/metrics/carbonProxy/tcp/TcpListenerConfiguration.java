@@ -29,7 +29,7 @@ public class TcpListenerConfiguration {
 	@Bean
 	public IntegrationFlow inboundTcpFlow() {
 	    return IntegrationFlows.from("inboundTcpChannel")
-	            .channel("byteArrayChannel")
+	            .channel("preProcessorQueueChannel")
 	            .get();
 	}
 	

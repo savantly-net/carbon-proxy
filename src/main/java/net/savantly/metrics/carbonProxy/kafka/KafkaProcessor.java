@@ -5,14 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.annotation.Transformer;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
-import net.savantly.metrics.carbonProxy.schema.Metric;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
 @Configuration
@@ -27,13 +26,22 @@ public class KafkaProcessor {
 	@Qualifier("kafkaMetricProducerMessageHandler")
 	private MessageHandler handler;
 
+	@Transformer(inputChannel="singleMetricInputChannel", outputChannel="kafkaHandlerInput")
+	public MetricDefinition singleMetricStringToMetricDefinition(String str){
+		return new MetricDefinition(str, MetricDefinition.Style.Metric_1_0);
+	}
 	
-	@Bean
+	@ServiceActivator(inputChannel="kafkaHandlerInput")
+	public void handleKafkaMessage(Message<MetricDefinition> message){
+		handler.handleMessage(message);
+	}
+	
+/*	@Bean
 	public IntegrationFlow kafkaIntegrationFlow() {
 		return IntegrationFlows.from(singleMetricInputChannel)
-				.<String, Metric>transform(S -> new MetricDefinition(S, MetricDefinition.Style.Metric_1_0))
+				.transform(MessageChannels)
 				.handle(handler)
 				.get();
-	}
+	}*/
 
 }
