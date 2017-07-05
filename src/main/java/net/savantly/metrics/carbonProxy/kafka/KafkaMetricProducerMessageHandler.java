@@ -11,6 +11,7 @@ import org.springframework.messaging.MessagingException;
 import net.savantly.metrics.carbonProxy.filter.FilterService;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class KafkaMetricProducerMessageHandler implements MessageHandler {
 	private static final Logger log = LoggerFactory.getLogger(KafkaMetricProducerMessageHandler.class);
 	private final CountDownLatch latch = new CountDownLatch(2);
@@ -27,6 +28,7 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 		latch.countDown();
 	}
 
+
 	@Override
 	public void handleMessage(Message<?> message) throws MessagingException {
 		MetricDefinition metricDefinition = (MetricDefinition) message.getPayload();
@@ -34,31 +36,27 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 		// If the message isn't valid then don't send it
 		if(metricDefinition == null || metricDefinition.getId() == null){
 			log.debug("skipping invalid metric '{}'", metricDefinition);
-			latch.countDown();
-			return;
-		}
-		
-		try {
-			if (filterService.isEmpty()) {
-				log.debug("Sending message '{}'", metricDefinition.toString());
-				producer.send(metricDefinition);
-			} else {
-				boolean matched = false;
-				matched = filterService.isMatched(metricDefinition);
-
-				if (matched) {
+		} else {
+			try {
+				if (filterService.isEmpty()) {
+					log.debug("Sending message '{}'", metricDefinition.toString());
 					producer.send(metricDefinition);
 				} else {
-					log.debug("metric did not match filter '{}'", metricDefinition);
+					boolean matched = false;
+					matched = filterService.isMatched(metricDefinition);
+
+					if (matched) {
+						producer.send(metricDefinition);
+					} else {
+						log.debug("metric did not match filter '{}'", metricDefinition);
+					}
 				}
-			}
-		} catch (Exception e) {
-			log.error("Failed to send message", e);
-		} finally {
-			latch.countDown();
+			} catch (Exception e) {
+				log.error("Failed to send message", e);
+			} 
 		}
+		latch.countDown();
+
 	}
-
-
 
 }

@@ -41,14 +41,14 @@ public class UdpCarbonListenerTest {
 	@Test
 	public void testSingle() throws IOException, InterruptedException {
 		testOneConnection(1);
-		handler.getLatch().await(10, TimeUnit.SECONDS);
-		Assert.assertEquals(handler.getLatch().getCount(), 0);
+		handler.getLatch().await(60, TimeUnit.SECONDS);
+		Assert.assertEquals(0, handler.getLatch().getCount());
 	}
 	@Test
-	public void testMulti(){
+	public void testMulti() throws InterruptedException{
 		
-		int threadPoolSize = 10;
-		int loopSize = 5;
+		int threadPoolSize = 2;
+		int loopSize = 2;
 		
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		for (int i = 0; i < loopSize; i++) {
@@ -66,12 +66,10 @@ public class UdpCarbonListenerTest {
 		
 		try {
 		    log.debug("attempt to shutdown executor");
-			handler.getLatch().await(10, TimeUnit.SECONDS);
-		    executor.shutdown();
-		    executor.awaitTermination(10, TimeUnit.SECONDS);
+		    executor.awaitTermination(5, TimeUnit.SECONDS);
 		}
 		catch (InterruptedException e) {
-			log.debug("tasks interrupted");
+			log.error("tasks interrupted");
 			fail("took too long");
 		}
 		finally {
@@ -80,7 +78,8 @@ public class UdpCarbonListenerTest {
 		    }
 		    executor.shutdownNow();
 		    log.debug("shutdown finished");
-		    Assert.assertEquals(handler.getLatch().getCount(), 0);
+			handler.getLatch().await(5, TimeUnit.SECONDS);
+		    Assert.assertEquals(0, handler.getLatch().getCount());
 		}
 
 	}
@@ -89,7 +88,7 @@ public class UdpCarbonListenerTest {
 		UdpClient client = new UdpClient(port);
 		Random r = new Random();
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 3; i++) {
 			String str = String.format("test.relay.udp-%s.count %s %s\n", id, r.nextInt(10), DateTime.now().getMillis()/1000-(i*30));
 			sb.append(str);
 		}
