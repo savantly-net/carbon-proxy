@@ -16,9 +16,12 @@ import org.springframework.messaging.MessageChannel;
 @MessageEndpoint("plainTextMessageEndpoint")
 public class PlainTextMessageEndpoint {
 	private static final Logger log = LoggerFactory.getLogger(PlainTextMessageEndpoint.class);
-	private final CountDownLatch latch = new CountDownLatch(2);
+	private CountDownLatch latch = new CountDownLatch(1);
 	public CountDownLatch getLatch(){
 		return latch;
+	}
+	public void setLatch(CountDownLatch latch) {
+		this.latch = latch;
 	}
 	
 	@Value("${preProcessorQueueChannel.size}")

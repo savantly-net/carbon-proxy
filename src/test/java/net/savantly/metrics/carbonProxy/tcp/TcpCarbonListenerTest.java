@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +27,7 @@ import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode=ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TcpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(TcpCarbonListenerTest.class);
@@ -62,7 +61,7 @@ public class TcpCarbonListenerTest {
 	}
 	
 	@Test
-	public void testLoadAndPerformance(){
+	public void testLoadAndPerformance() throws InterruptedException{
 		
 		int threadPoolSize = 10;
 		int loopSize = 10;
@@ -84,7 +83,6 @@ public class TcpCarbonListenerTest {
 		
 		try {
 		    log.debug("attempt to shutdown executor");
-			handler.getLatch().await(10, TimeUnit.SECONDS);
 		    executor.shutdown();
 		    executor.awaitTermination(5, TimeUnit.SECONDS);
 		}
@@ -99,7 +97,7 @@ public class TcpCarbonListenerTest {
 		    executor.shutdownNow();
 		    log.debug("shutdown finished");
 		}
-
+		handler.getLatch().await(10, TimeUnit.SECONDS);
 	}
 	
 

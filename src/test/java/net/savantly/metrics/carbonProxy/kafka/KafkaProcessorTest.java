@@ -27,6 +27,7 @@ import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
@@ -92,24 +93,14 @@ public class KafkaProcessorTest {
 		MetricDefinition metric = new MetricDefinition(payloadString, MetricDefinition.Style.Metric_1_0);
 		metric.setMetric(payloadString);
 
-		Message<String> message = new Message<String>() {
-			@Override
-			public String getPayload() {
-				return payloadString;
-			}
-
-			@Override
-			public MessageHeaders getHeaders() {
-				return new MessageHeaders(new HashMap<>());
-			}
-		};
+		GenericMessage<String> message = new GenericMessage<String>(payloadString);
 
 		try {
 			singleMetricInputChannel.send(message);
 		} catch (Exception e) {
 			log.error("Failed to send message", e);
 		} finally {
-			receiver.getLatch().await(10, TimeUnit.SECONDS);
+			receiver.getLatch().await(60, TimeUnit.SECONDS);
 		    Assert.assertEquals(0, receiver.getLatch().getCount());
 		}
 	}

@@ -1,12 +1,18 @@
 package net.savantly.metrics.carbonProxy.kafka;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import net.savantly.metrics.carbonProxy.filter.FilterService;
 import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
@@ -32,6 +38,7 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 	@Override
 	public void handleMessage(Message<?> message) throws MessagingException {
 		MetricDefinition metricDefinition = (MetricDefinition) message.getPayload();
+		ListenableFuture<SendResult<String, MetricDefinition>> sendresult = null;
 		
 		// If the message isn't valid then don't send it
 		if(metricDefinition == null || metricDefinition.getId() == null){
@@ -40,23 +47,29 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 			try {
 				if (filterService.isEmpty()) {
 					log.debug("Sending message '{}'", metricDefinition.toString());
-					producer.send(metricDefinition);
+					sendresult = producer.send(metricDefinition);
 				} else {
 					boolean matched = false;
 					matched = filterService.isMatched(metricDefinition);
 
 					if (matched) {
-						producer.send(metricDefinition);
+						log.debug("Sending matched message '{}'", metricDefinition.toString());
+						sendresult =producer.send(metricDefinition);
 					} else {
 						log.debug("metric did not match filter '{}'", metricDefinition);
 					}
 				}
+				if(sendresult != null){
+					SendResult<String, MetricDefinition> response = sendresult.get();
+					log.debug(response.getRecordMetadata().toString());
+				}
+				
 			} catch (Exception e) {
 				log.error("Failed to send message", e);
-			} 
+			} finally {
+				latch.countDown();
+			}
 		}
-		latch.countDown();
-
 	}
 
 }

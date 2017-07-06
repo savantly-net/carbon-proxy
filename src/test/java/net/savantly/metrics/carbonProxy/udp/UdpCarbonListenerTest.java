@@ -1,54 +1,80 @@
 package net.savantly.metrics.carbonProxy.udp;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import net.savantly.metrics.carbonProxy.Application;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
+import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducer;
+import net.savantly.metrics.carbonProxy.test.utils.CountdownInterceptor;
 import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = Application.class)
-@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		Application.class,
+		UdpCarbonListenerTest.TestConfiguration.class})
 public class UdpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	
-	
-	@Autowired
-	KafkaMetricProducerMessageHandler handler;
+	private int threadTimeOut = 60;
 	
 	@Value("${carbonProxy.server-port}")
 	int port;
-
+	
+	@SpyBean
+	KafkaMetricProducer producer;
+	private CountDownLatch latch;
+	private Answer<Void> voidAnswer = new Answer<Void>(){
+		@Override
+		public Void answer(InvocationOnMock invocation) throws Throwable {
+			latch.countDown();
+			return null;
+		}
+	};
+	
+	@Before
+	public void before(){
+		// when Kafka producer attempts to connect to the server
+		// mock the send, and do a countdown on the latch
+		Mockito.doAnswer(voidAnswer).when(producer).send(Mockito.any());
+	}
+	
 	@Test
-	public void testSingle() throws IOException, InterruptedException {
+	public void testSingle() throws InterruptedException, IOException {
+		latch = new CountDownLatch(1);
 		testOneConnection(1);
-		handler.getLatch().await(60, TimeUnit.SECONDS);
-		Assert.assertEquals(0, handler.getLatch().getCount());
+		latch.await(10, TimeUnit.SECONDS);
+		assertEquals("Latch count should be 0", 0, latch.getCount());
 	}
 	@Test
 	public void testMulti() throws InterruptedException{
 		
-		int threadPoolSize = 2;
-		int loopSize = 2;
+		int threadPoolSize = 10;
+		int loopSize = 10;
+		
+		latch = new CountDownLatch(loopSize);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		for (int i = 0; i < loopSize; i++) {
@@ -66,7 +92,8 @@ public class UdpCarbonListenerTest {
 		
 		try {
 		    log.debug("attempt to shutdown executor");
-		    executor.awaitTermination(5, TimeUnit.SECONDS);
+		    executor.shutdown();
+		    executor.awaitTermination(threadTimeOut, TimeUnit.SECONDS);
 		}
 		catch (InterruptedException e) {
 			log.error("tasks interrupted");
@@ -78,8 +105,8 @@ public class UdpCarbonListenerTest {
 		    }
 		    executor.shutdownNow();
 		    log.debug("shutdown finished");
-			handler.getLatch().await(5, TimeUnit.SECONDS);
-		    Assert.assertEquals(0, handler.getLatch().getCount());
+		    latch.await(threadTimeOut, TimeUnit.SECONDS);
+		    assertEquals("Latch count should be 0", 0, latch.getCount());
 		}
 
 	}
@@ -94,7 +121,15 @@ public class UdpCarbonListenerTest {
 		}
 		String msg = sb.toString();
 		client.sendMessage(msg);
-		client.close();
+		//client.close();
+	}
+	
+	@Configuration
+	protected static class TestConfiguration {
+		@Bean
+		public CountdownInterceptor countDownInterceptor(){
+			return new CountdownInterceptor(new CountDownLatch(1));
+		}
 	}
 
 }
