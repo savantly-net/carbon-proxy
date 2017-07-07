@@ -63,7 +63,11 @@
 			<version>1.2.1</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>net.savantly.metrics</groupId>
+			<artifactId>metric-schema</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.savantly/graphite-client -->
 		<dependency>
 			<groupId>net.savantly</groupId>

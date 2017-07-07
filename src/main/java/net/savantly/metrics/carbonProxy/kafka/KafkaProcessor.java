@@ -12,7 +12,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 @Configuration
 @ConditionalOnProperty(prefix="kafka", name="producer.enabled")

@@ -2,7 +2,7 @@ package net.savantly.metrics.carbonProxy.filter;
 
 import java.util.Map;
 
-import net.savantly.metrics.carbonProxy.schema.Metric;
+import net.savantly.metrics.schema.Metric;
 
 public class MetricFilterService extends FilterService<Metric>{
 

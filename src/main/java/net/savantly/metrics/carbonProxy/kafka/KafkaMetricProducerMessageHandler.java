@@ -1,13 +1,9 @@
 package net.savantly.metrics.carbonProxy.kafka;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -15,7 +11,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import net.savantly.metrics.carbonProxy.filter.FilterService;
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class KafkaMetricProducerMessageHandler implements MessageHandler {

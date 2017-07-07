@@ -19,7 +19,7 @@ import org.springframework.messaging.MessageHandler;
 import net.savantly.metrics.carbonProxy.filter.FilterService;
 import net.savantly.metrics.carbonProxy.filter.MetricFilter;
 import net.savantly.metrics.carbonProxy.filter.MetricFilterService;
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 @Configuration
 @ConfigurationProperties("kafka.producer")

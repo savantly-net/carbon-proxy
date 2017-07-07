@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import net.savantly.metrics.carbonProxy.schema.Metric;
-
 public abstract class FilterService<T> {
 
 	protected final Map<String, MetricFilter> filters;

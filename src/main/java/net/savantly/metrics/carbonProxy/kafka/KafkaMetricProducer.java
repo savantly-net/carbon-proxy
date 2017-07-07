@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 public class KafkaMetricProducer {
 	  private static final Logger log = LoggerFactory.getLogger(KafkaMetricProducer.class);

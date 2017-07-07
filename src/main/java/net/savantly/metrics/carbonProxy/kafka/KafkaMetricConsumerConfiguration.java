@@ -14,7 +14,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 @Configuration
 @ConditionalOnProperty("kafka.consumer.enabled")

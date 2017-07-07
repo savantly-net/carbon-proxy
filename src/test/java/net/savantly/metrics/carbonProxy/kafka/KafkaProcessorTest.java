@@ -1,6 +1,5 @@
 package net.savantly.metrics.carbonProxy.kafka;
 
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
@@ -16,27 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumer;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricConsumerConfiguration;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerConfiguration;
-import net.savantly.metrics.carbonProxy.kafka.KafkaProcessor;
-import net.savantly.metrics.carbonProxy.schema.Metric;
-import net.savantly.metrics.carbonProxy.schema.MetricDefinition;
+import net.savantly.metrics.schema.MetricDefinition;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { 
