@@ -21,9 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.savantly.metrics.carbonProxy.Application;
@@ -35,15 +37,16 @@ import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 @SpringBootTest(classes = {
 		Application.class,
 		UdpCarbonListenerTest.TestConfiguration.class})
+@DirtiesContext(methodMode=MethodMode.AFTER_METHOD)
 public class UdpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	
-	private int threadTimeOut = 60;
+	private int threadTimeOut = 10;
 	
 	@Value("${carbonProxy.server-port}")
 	int port;
 	
-	@SpyBean
+	@MockBean
 	KafkaMetricProducer producer;
 	private CountDownLatch latch;
 	private Answer<Void> voidAnswer = new Answer<Void>(){
@@ -64,8 +67,31 @@ public class UdpCarbonListenerTest {
 	@Test
 	public void testSingle() throws InterruptedException, IOException {
 		latch = new CountDownLatch(1);
-		testOneConnection(1);
-		latch.await(10, TimeUnit.SECONDS);
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.submit(()->{
+			try {
+				testOneConnection(1);
+			} catch (Exception e) {
+				log.error("",e);
+			}
+		});
+		try {
+		    log.debug("attempt to shutdown executor");
+		    executor.shutdown();
+		    executor.awaitTermination(threadTimeOut, TimeUnit.SECONDS);
+		}
+		catch (InterruptedException e) {
+			log.debug("tasks interrupted");
+			fail("took too long");
+		}
+		finally {
+		    if (!executor.isTerminated()) {
+		    	log.debug("cancel non-finished tasks");
+		    }
+		    executor.shutdownNow();
+		    log.debug("shutdown finished");
+		}
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
 		assertEquals("Latch count should be 0", 0, latch.getCount());
 	}
 	@Test
@@ -121,7 +147,7 @@ public class UdpCarbonListenerTest {
 		}
 		String msg = sb.toString();
 		client.sendMessage(msg);
-		//client.close();
+		client.close();
 	}
 	
 	@Configuration

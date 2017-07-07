@@ -6,58 +6,83 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import net.savantly.metrics.carbonProxy.Application;
 import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducerMessageHandler;
+import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-@DirtiesContext(classMode=ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(methodMode=MethodMode.AFTER_METHOD)
 public class TcpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(TcpCarbonListenerTest.class);
 	private Random random = new Random();
+	private int threadTimeOut = 10;
 
 	@Autowired
 	ApplicationConfiguration carbonProxy;
-	@Autowired
-	KafkaMetricProducerMessageHandler handler;
+	@MockBean
+	KafkaMetricProducer producer;
+	private CountDownLatch latch;
+	private Answer<Void> voidAnswer = new Answer<Void>(){
+		@Override
+		public Void answer(InvocationOnMock invocation) throws Throwable {
+			latch.countDown();
+			return null;
+		}
+	};
+	
+	@Before
+	public void before(){
+		// when Kafka producer attempts to connect to the server
+		// mock the send, and do a countdown on the latch
+		Mockito.doAnswer(voidAnswer).when(producer).send(Mockito.any());
+	}
 
 
 	@Test
 	public void testPlainText() throws IOException, InterruptedException {
+		latch = new CountDownLatch(1);
 		long id = 1;
 		testOneConnection(id, createMultiMetricPayload(id));
-		handler.getLatch().await(10, TimeUnit.SECONDS);
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
 	}
 	
 	@Test
 	public void testPayloadWithMissingField() throws IOException, InterruptedException {
+		latch = new CountDownLatch(1);
 		long id = 2;
 		testOneConnection(id, createSingleMetricPayloadWithMissingField(id));
-		handler.getLatch().await(10, TimeUnit.SECONDS);
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
 	}
 	
 	@Test
 	public void testPayloadWithCrLf() throws IOException, InterruptedException {
+		latch = new CountDownLatch(1);
 		long id = 3;
 		testOneConnection(id, createMultiMetricPayloadWithCrLf(id ));
-		handler.getLatch().await(10, TimeUnit.SECONDS);
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
 	}
 	
 	@Test
@@ -65,6 +90,8 @@ public class TcpCarbonListenerTest {
 		
 		int threadPoolSize = 10;
 		int loopSize = 10;
+		
+		latch = new CountDownLatch(loopSize);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		for (int i = 0; i < loopSize; i++) {
@@ -84,7 +111,7 @@ public class TcpCarbonListenerTest {
 		try {
 		    log.debug("attempt to shutdown executor");
 		    executor.shutdown();
-		    executor.awaitTermination(5, TimeUnit.SECONDS);
+		    executor.awaitTermination(threadTimeOut, TimeUnit.SECONDS);
 		}
 		catch (InterruptedException e) {
 			log.debug("tasks interrupted");
@@ -97,7 +124,7 @@ public class TcpCarbonListenerTest {
 		    executor.shutdownNow();
 		    log.debug("shutdown finished");
 		}
-		handler.getLatch().await(10, TimeUnit.SECONDS);
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
 	}
 	
 
@@ -122,7 +149,7 @@ public class TcpCarbonListenerTest {
 	
 	private String createMultiMetricPayloadWithCrLf(long id){
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 3; i++) {
 			String msg = String.format("test.relay.tcp-%s.count %s %s\r\n", id, random.nextInt(10), DateTime.now().getMillis()/1000-(i*30));
 			sb.append(msg);
 		}
