@@ -38,6 +38,7 @@ public class CarbonRelayConfiguration {
 	@ServiceActivator(inputChannel = "carbonUdpRelayChannel")
 	public UnicastSendingMessageHandler unicastSender() {
 		UnicastSendingMessageHandler udpAdapter = new UnicastSendingMessageHandler(config.getCarbonHost(), config.getCarbonPort());
+		udpAdapter.setLoggingEnabled(true);
 		return udpAdapter;
 	}
 }

@@ -94,6 +94,7 @@ public class UdpCarbonListenerTest {
 		latch.await(threadTimeOut, TimeUnit.SECONDS);
 		assertEquals("Latch count should be 0", 0, latch.getCount());
 	}
+	
 	@Test
 	public void testMulti() throws InterruptedException{
 		
@@ -135,6 +136,50 @@ public class UdpCarbonListenerTest {
 		    assertEquals("Latch count should be 0", 0, latch.getCount());
 		}
 
+	}
+	
+	@Test
+	public void testSingleXmlMetric() throws InterruptedException, IOException {
+		latch = new CountDownLatch(1);
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.submit(()->{
+			try {
+				testOneConnectionWithXmlData(1);
+			} catch (Exception e) {
+				log.error("",e);
+			}
+		});
+		try {
+		    log.debug("attempt to shutdown executor");
+		    executor.shutdown();
+		    executor.awaitTermination(threadTimeOut, TimeUnit.SECONDS);
+		}
+		catch (InterruptedException e) {
+			log.debug("tasks interrupted");
+			fail("took too long");
+		}
+		finally {
+		    if (!executor.isTerminated()) {
+		    	log.debug("cancel non-finished tasks");
+		    }
+		    executor.shutdownNow();
+		    log.debug("shutdown finished");
+		}
+		latch.await(threadTimeOut, TimeUnit.SECONDS);
+		assertEquals("Latch count should be 0", 0, latch.getCount());
+	}
+	
+	private void testOneConnectionWithXmlData(long id) throws IOException{
+		UdpClient client = new UdpClient(port);
+		Random r = new Random();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 3; i++) {
+			String str = String.format("<metric type=\"IntCounter\" name=\"ABC|Server|%s|HOST:Timeout\" value=\"%s\" />\n", id, r.nextInt(10));
+			sb.append(str);
+		}
+		String msg = sb.toString();
+		client.sendMessage(msg);
+		client.close();
 	}
 	
 	private void testOneConnection(long id) throws IOException{
