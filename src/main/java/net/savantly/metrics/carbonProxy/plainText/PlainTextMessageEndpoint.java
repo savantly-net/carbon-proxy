@@ -80,11 +80,19 @@ public class PlainTextMessageEndpoint {
 		return payload;
 	}
 	private String dropInvalidValues(String metricString) {
-		if (metricString != null && metricString.split(" ").length == 3) {
-			return metricString;
-		} else {
-			return null;
+		if (metricString != null) {
+			String[] parts = metricString.split(" ");
+			if (parts.length == 3) {
+				try {
+					Float.parseFloat(parts[1]);
+					return metricString;
+				} catch (NumberFormatException ex) {
+					log.debug("dropping invalid metric value: {}", metricString);
+					return null;
+				}
+			}
 		}
+		return null;
 	}
 	private String doReplacement(String s) {
 		return rewriter.rewrite(s);
