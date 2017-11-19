@@ -20,7 +20,7 @@ public class KafkaMetricProducer {
 	  private KafkaTemplate<String, MetricDefinition> kafkaTemplate;
 
 	  public ListenableFuture<SendResult<String, MetricDefinition>> send(MetricDefinition metricDefinition) {
-	    log.debug("sending MetricDefinition='{}'", metricDefinition.toString());
+	    log.debug("sending MetricDefinition='{}'", metricDefinition);
 	    ListenableFuture<SendResult<String, MetricDefinition>> sendResult = kafkaTemplate.send(jsonTopic, metricDefinition.getId(), metricDefinition);
 		return sendResult;
 	  }

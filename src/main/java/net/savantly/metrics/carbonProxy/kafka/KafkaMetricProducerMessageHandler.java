@@ -33,6 +33,9 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 
 	@Override
 	public void handleMessage(Message<?> message) throws MessagingException {
+		if (message == null || message.getPayload() == null) {
+			return;
+		}
 		MetricDefinition metricDefinition = (MetricDefinition) message.getPayload();
 		ListenableFuture<SendResult<String, MetricDefinition>> sendresult = null;
 		
@@ -57,7 +60,7 @@ public class KafkaMetricProducerMessageHandler implements MessageHandler {
 				}
 				if(sendresult != null){
 					SendResult<String, MetricDefinition> response = sendresult.get();
-					log.debug(response.getRecordMetadata().toString());
+					log.debug("{}",response.getRecordMetadata());
 				}
 				
 			} catch (Exception e) {

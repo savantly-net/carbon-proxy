@@ -70,7 +70,7 @@ public class PlainTextMessageEndpoint {
 			log.debug("split multimetric message '{}'", Arrays.toString(messagePayloads));
 		}
 		String[] payload = Arrays.stream(messagePayloads).map((s) -> {
-			return doReplacement(ensureFormat(s));
+			return dropInvalidValues(doReplacement(ensureFormat(s)));
 		})
 		// only forward the non-null items
 		.filter(s -> s != null)
@@ -78,6 +78,13 @@ public class PlainTextMessageEndpoint {
 		
 		latch.countDown();
 		return payload;
+	}
+	private String dropInvalidValues(String metricString) {
+		if (metricString != null && metricString.split(" ").length == 3) {
+			return metricString;
+		} else {
+			return null;
+		}
 	}
 	private String doReplacement(String s) {
 		return rewriter.rewrite(s);

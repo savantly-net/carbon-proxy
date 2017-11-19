@@ -22,7 +22,7 @@ public class KafkaMetricConsumer {
 
 	  @KafkaListener(topics = "${kafka.consumer.topic}")
 	  public void receive(Metric metricDefinition) {
-	    log.debug("received metricDefinition='{}'", metricDefinition.toString());
+	    log.debug("received metricDefinition='{}'", metricDefinition);
 	    latch.countDown();
 	  }
 }
