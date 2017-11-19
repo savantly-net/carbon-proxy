@@ -41,7 +41,7 @@ import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 public class UdpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	
-	private int threadTimeOut = 10;
+	private int threadTimeOut = 1000;
 	
 	@Value("${carbonProxy.server-port}")
 	int port;
