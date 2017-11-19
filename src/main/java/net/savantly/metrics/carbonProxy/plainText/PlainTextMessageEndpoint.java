@@ -86,7 +86,7 @@ public class PlainTextMessageEndpoint {
 				try {
 					Float.parseFloat(parts[1]);
 					return metricString;
-				} catch (NumberFormatException ex) {
+				} catch (Exception ex) {
 					log.debug("dropping invalid metric value: {}", metricString);
 					return null;
 				}
