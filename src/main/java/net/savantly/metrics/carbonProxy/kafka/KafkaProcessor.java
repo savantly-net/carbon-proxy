@@ -28,7 +28,12 @@ public class KafkaProcessor {
 
 	@Transformer(inputChannel="singleMetricInputChannel", outputChannel="kafkaHandlerInput")
 	public MetricDefinition singleMetricStringToMetricDefinition(String str){
-		return new MetricDefinition(str, MetricDefinition.Style.Metric_1_0);
+		try {
+			return new MetricDefinition(str, MetricDefinition.Style.Metric_1_0);
+		} catch (Exception e) {
+			log.error("Failed to parse MetricDefinition: {}", str);
+			return null;
+		}
 	}
 	
 	@ServiceActivator(inputChannel="kafkaHandlerInput")

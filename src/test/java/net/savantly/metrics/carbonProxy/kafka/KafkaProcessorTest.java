@@ -46,6 +46,8 @@ public class KafkaProcessorTest {
 	
 	@Autowired
 	private KafkaMetricConsumer receiver;
+	@Autowired
+	KafkaProcessor processor;
 	
 	@Autowired
 	private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
@@ -92,6 +94,17 @@ public class KafkaProcessorTest {
 		} finally {
 			receiver.getLatch().await(60, TimeUnit.SECONDS);
 		    Assert.assertEquals(0, receiver.getLatch().getCount());
+		}
+	}
+	
+	@Test
+	public void testInvalidMetric() throws InterruptedException {
+		String payloadString = String.format("test.metric.value nan %s", DateTime.now().getMillis() / 1000);
+
+		try {
+			processor.singleMetricStringToMetricDefinition(payloadString);
+		} catch (Exception e) {
+			Assert.assertNotNull(e);
 		}
 	}
 
