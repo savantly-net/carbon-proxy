@@ -25,11 +25,9 @@ import net.savantly.metrics.carbonProxy.rewriter.RewriterService;
 @MessageEndpoint("plainTextMessageEndpoint")
 public class PlainTextMessageEndpoint {
 	private static final Logger log = LoggerFactory.getLogger(PlainTextMessageEndpoint.class);
-	JAXBContext jaxbContext;
-	Unmarshaller unmarshaller;
-	
-	@Autowired
-	RewriterService rewriter;
+	private JAXBContext jaxbContext;
+	private Unmarshaller unmarshaller;
+	private RewriterService rewriter;
 	
 	private CountDownLatch latch = new CountDownLatch(1);
 	public CountDownLatch getLatch(){
@@ -42,9 +40,11 @@ public class PlainTextMessageEndpoint {
 	@Value("${preProcessorQueueChannel.size}")
 	int preProcessorQueueChannelSize;
 	
-	public PlainTextMessageEndpoint() throws JAXBException {
-		jaxbContext = JAXBContext.newInstance(CaMetric.class);
-		unmarshaller = jaxbContext.createUnmarshaller();
+	@Autowired
+	public PlainTextMessageEndpoint(RewriterService rewriter) throws JAXBException {
+		this.jaxbContext = JAXBContext.newInstance(CaMetric.class);
+		this.unmarshaller = jaxbContext.createUnmarshaller();
+		this.rewriter = rewriter;
 	}
 	
 	@Bean("preProcessorQueueChannel")
@@ -113,6 +113,7 @@ public class PlainTextMessageEndpoint {
 	private String convertXmlMetricToCarbonStyle(String s) throws JAXBException {
 		StringReader sr = new StringReader(s);
 		CaMetric response = (CaMetric) unmarshaller.unmarshal(sr);
+		sr.close();
 		return response.toString();
 	}
 
