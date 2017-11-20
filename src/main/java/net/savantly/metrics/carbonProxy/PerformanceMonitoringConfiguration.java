@@ -44,7 +44,7 @@ public class PerformanceMonitoringConfiguration {
 		long epoch = DateTime.now().getMillis()/1000;
 		Map<String, Object> response = metricsEndpoint.invoke();
 		response.keySet().stream().forEach((k) -> {
-			String metricString = String.format("%s%s %s %s\n", this.prefix, k, response.get(k), epoch);
+			String metricString = String.format("%scarbon-proxy.%s %s %s\n", this.prefix, k, response.get(k), epoch);
 			log.debug("sending performance metrics: {}", metricString);
 			this.carbonQueue.send(new GenericMessage<String>(metricString));
 		});
