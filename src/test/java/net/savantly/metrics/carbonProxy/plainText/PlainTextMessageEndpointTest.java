@@ -41,7 +41,7 @@ public class PlainTextMessageEndpointTest {
 	
 	@Test
 	public void testWithAllGoodMetrics() throws InterruptedException, IOException {
-		int count = 100;
+		int count = 10;
 		String[] result = endpoint.splitMultiMetricMessage(MetricFactory.goodMetrics(count));
 		assertEquals("should be this many lines:", count, result.length);
 	}
