@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +25,7 @@ import net.savantly.metrics.carbonProxy.filter.MetricFilter;
 import net.savantly.metrics.carbonProxy.filter.StringFilterService;
 import net.savantly.metrics.carbonProxy.rewriter.RewriterService;
 
-@Configuration
+@Configuration("carbonQueueConfiguration")
 @ConfigurationProperties("carbon")
 public class CarbonQueueConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(CarbonQueueConfiguration.class);
@@ -40,9 +39,12 @@ public class CarbonQueueConfiguration {
 	private String[] defaultChannels = {CarbonRelayConfiguration.CARBON_UDP_RELAY_CHANNEL};
 	private String[] aggregatorChannels = {CarbonRelayConfiguration.CARBON_UDP_AGGREGATOR_CHANNEL};
 	
-	@Autowired
-	@Qualifier("singleMetricInputChannel")
 	private MessageChannel metricInputChannel;
+	
+	public CarbonQueueConfiguration(
+			@Qualifier("singleMetricInputChannel") MessageChannel metricInputChannel) {
+		this.metricInputChannel = metricInputChannel;
+	}
 	
 	@Bean("carbonQueue")
 	public QueueChannel carbonQueue(){

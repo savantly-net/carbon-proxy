@@ -13,6 +13,7 @@ import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
@@ -22,6 +23,7 @@ import net.savantly.metrics.carbonProxy.test.MetricFactory;
 
 @Configuration
 @ConfigurationProperties("carbon.performance")
+@DependsOn("carbonQueueConfiguration")
 public class PerformanceMonitoringConfiguration {
 	private final Logger log = LoggerFactory.getLogger(PerformanceMonitoringConfiguration.class);
 	private boolean monitoring = true;
@@ -35,16 +37,16 @@ public class PerformanceMonitoringConfiguration {
 	
 	private QueueChannel carbonQueue;
 	private MetricsEndpoint metricsEndpoint;
-
-	@Qualifier("multiMetricInputChannel")
 	private MessageChannel multiMetricInputChannel;
 	
 	@Autowired
 	public PerformanceMonitoringConfiguration(
 			@Qualifier("carbonQueue") QueueChannel carbonQueue,
-			MetricsEndpoint metricsEndpoint) {
+			MetricsEndpoint metricsEndpoint,
+			@Qualifier("multiMetricInputChannel") MessageChannel multiMetricInputChannel) {
 		this.carbonQueue = carbonQueue;
 		this.metricsEndpoint = metricsEndpoint;
+		this.multiMetricInputChannel = multiMetricInputChannel;
 	}
 	
 	@Scheduled(fixedRateString="${carbon.performance.frequencyMs:60000}")
