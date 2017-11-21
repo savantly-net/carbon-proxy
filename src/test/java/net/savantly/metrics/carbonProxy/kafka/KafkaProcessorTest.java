@@ -23,6 +23,8 @@ import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
@@ -35,6 +37,7 @@ import net.savantly.metrics.schema.MetricDefinition;
 		KafkaMetricProducerConfiguration.class,
 		KafkaMetricConsumerConfiguration.class,
 		KafkaProcessor.class })
+@DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 public class KafkaProcessorTest {
 
 	private final static Logger log = LoggerFactory.getLogger(KafkaProcessorTest.class);
@@ -55,8 +58,11 @@ public class KafkaProcessorTest {
 	@ClassRule
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1, true, TOPIC);
 
+	
 	@BeforeClass
 	public static void beforeClass() {
+		System.setProperty("kafka.producer.enabled", "true");
+		System.setProperty("kafka.consumer.enabled", "true");
 		TestConfiguration.kafkaBootstrapServers = embeddedKafka.getBrokersAsString();
 		log.debug("kafkaServers='{}'", TestConfiguration.kafkaBootstrapServers);
 		// override the property in application.properties

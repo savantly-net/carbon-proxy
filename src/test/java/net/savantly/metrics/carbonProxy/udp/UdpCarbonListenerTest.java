@@ -26,9 +26,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.ip.udp.UnicastSendingMessageHandler;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.savantly.metrics.carbonProxy.Application;
@@ -36,10 +33,7 @@ import net.savantly.metrics.carbonProxy.test.utils.CountdownInterceptor;
 import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		Application.class,
-		UdpCarbonListenerTest.TestConfiguration.class})
-@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
+@SpringBootTest(classes = {Application.class, UdpCarbonListenerTest.TestConfiguration.class})
 public class UdpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	

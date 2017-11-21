@@ -3,9 +3,9 @@ package net.savantly.metrics.carbonProxy.plainText;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
-import org.junit.Before;
+import javax.xml.bind.JAXBException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -14,30 +14,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import net.savantly.metrics.carbonProxy.Application;
+import net.savantly.metrics.carbonProxy.rewriter.RewriterService;
 import net.savantly.metrics.carbonProxy.test.MetricFactory;
-import net.savantly.metrics.carbonProxy.test.utils.CountdownInterceptor;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		Application.class,
-		PlainTextMessageEndpointTest.TestConfiguration.class})
-@DirtiesContext(methodMode=MethodMode.AFTER_METHOD)
+@SpringBootTest(classes = {PlainTextMessageEndpointTest.TestConfiguration.class})
 public class PlainTextMessageEndpointTest {
 
 	private final static Logger log = LoggerFactory.getLogger(PlainTextMessageEndpointTest.class);	
 	
 	@Autowired
 	PlainTextMessageEndpoint endpoint;
-	
-	@Before
-	public void before(){
-	}
-	
 	
 	@Test
 	public void testWithAllGoodMetrics() throws InterruptedException, IOException {
@@ -64,8 +53,12 @@ public class PlainTextMessageEndpointTest {
 	@Configuration
 	protected static class TestConfiguration {
 		@Bean
-		public CountdownInterceptor countDownInterceptor(){
-			return new CountdownInterceptor(new CountDownLatch(1));
+		public PlainTextMessageEndpoint plainTextMessageEndpoint(RewriterService rewriter) throws JAXBException{
+			return new PlainTextMessageEndpoint(rewriter);
+		}
+		@Bean
+		public RewriterService rewriterService() {
+			return new RewriterService();
 		}
 	}
 }
