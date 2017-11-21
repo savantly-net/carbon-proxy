@@ -46,7 +46,7 @@ public class CarbonQueueConfiguration {
 		this.metricInputChannel = metricInputChannel;
 	}
 	
-	@Bean("carbonQueue")
+	@Bean(CARBON_QUEUE_CHANNEL)
 	public QueueChannel carbonQueue(){
 		 QueueChannel channel = MessageChannels.queue().get();
 		 return channel;
