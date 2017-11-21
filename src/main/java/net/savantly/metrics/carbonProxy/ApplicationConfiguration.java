@@ -1,5 +1,8 @@
 package net.savantly.metrics.carbonProxy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +19,11 @@ public class ApplicationConfiguration {
 	
 	private int serverPort;
 	private String serverAddress;
-	private int carbonPort;
-	private String carbonHost;
+	private int carbonPort = 2003;
+	private String carbonHost = "localhost";
 	private int pollingFrequency;
+	private int carbonAggregatorPort = 2023;
+	private List<String> aggregatorMatches = new ArrayList<String>();
 	
 
 	@Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -69,6 +74,26 @@ public class ApplicationConfiguration {
 	}
 	public void setPollingFrequency(int pollingFrequency) {
 		this.pollingFrequency = pollingFrequency;
+	}
+
+
+	public int getCarbonAggregatorPort() {
+		return carbonAggregatorPort;
+	}
+
+
+	public void setCarbonAggregatorPort(int carbonAggregatorPort) {
+		this.carbonAggregatorPort = carbonAggregatorPort;
+	}
+
+
+	public List<String> getAggregatorMatches() {
+		return aggregatorMatches;
+	}
+
+
+	public void setAggregatorMatches(List<String> aggregatorMatches) {
+		this.aggregatorMatches = aggregatorMatches;
 	}
 
 }

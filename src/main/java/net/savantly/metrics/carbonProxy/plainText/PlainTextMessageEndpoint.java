@@ -111,29 +111,13 @@ public class PlainTextMessageEndpoint {
 		}
 	}
 	private String convertXmlMetricToCarbonStyle(String s) throws JAXBException {
-		StringReader sr = new StringReader(s);
-		CaMetric response = (CaMetric) unmarshaller.unmarshal(sr);
-		sr.close();
-		return response.toString();
+		try (StringReader sr = new StringReader(s)){
+			CaMetric response = (CaMetric) unmarshaller.unmarshal(sr);
+			sr.close();
+			return response.toString();
+		} catch (Exception e) {
+			return null;
+		}
+		
 	}
-
-	
-/*	@Bean
-	public IntegrationFlow plainTextIntegrationFlow(
-			@Qualifier("multiMetricOutputChannel") MessageChannel multiMetricOutputChannel,
-			@Qualifier("publisherChannel") MessageChannel publisherChannel) {
-		return IntegrationFlows.from(multiMetricOutputChannel)
-				.channel("publisherChannel")
-				.get();
-	}*/
-
-
-	
-/*	@Router(inputChannel="inboundRouterChannel")
-	public String[] routePlaintextMessage(String payload, @Headers Map<String, ?> headers){
-		if (headers.containsKey("ip_tcp_remotePort")){
-			return Arrays.array("outboundTcpChannel", "inboundCarbonQueueChannel");
-		} else return Arrays.array("inboundCarbonQueueChannel");
-	}*/
-
 }

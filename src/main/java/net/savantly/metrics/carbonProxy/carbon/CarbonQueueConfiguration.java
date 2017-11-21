@@ -11,12 +11,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.annotation.Router;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
+import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
 import net.savantly.metrics.carbonProxy.KeyValuePair;
 import net.savantly.metrics.carbonProxy.filter.MetricFilter;
 import net.savantly.metrics.carbonProxy.filter.StringFilterService;
@@ -27,12 +30,18 @@ import net.savantly.metrics.carbonProxy.rewriter.RewriterService;
 public class CarbonQueueConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(CarbonQueueConfiguration.class);
 
+	public static final String CARBON_QUEUE_CHANNEL = "carbonQueue";
 	private Map<String, MetricFilter> filters = new HashMap<>();
 	private Map<String, KeyValuePair> replacements = new HashMap<>();
+	private String[] defaultChannels = {CarbonRelayConfiguration.CARBON_UDP_RELAY_CHANNEL};
+	private String[] aggregatorChannels = {CarbonRelayConfiguration.CARBON_UDP_AGGREGATOR_CHANNEL};
 	
 	@Autowired
 	@Qualifier("singleMetricInputChannel")
 	private MessageChannel metricInputChannel;
+	
+	@Autowired
+	private ApplicationConfiguration appConfig;	
 
 	
 	@Bean("carbonQueue")
@@ -53,6 +62,17 @@ public class CarbonQueueConfiguration {
 		return service;
 	}
 	
+	@Router(inputChannel=CARBON_QUEUE_CHANNEL)
+	public String[] carbonQueueRouter(Message<String> message) {
+		String payload = (String) message.getPayload();
+		for (String regex : appConfig.getAggregatorMatches()) {
+			if (payload.matches(regex)) {
+				return this.aggregatorChannels;
+			}
+		}
+		return this.defaultChannels;
+	}
+	
 	@Bean
 	public IntegrationFlow carbonQueueFlow(@Qualifier("carbonFilterService") StringFilterService filterService) {
 
@@ -71,8 +91,7 @@ public class CarbonQueueConfiguration {
                         });
 					a.id("carbonItemAggregator");
 				})
-				.channel("carbonQueue")
-				.channel("carbonUdpRelayChannel")
+				.channel(CARBON_QUEUE_CHANNEL)
 				.get();
 	}
 

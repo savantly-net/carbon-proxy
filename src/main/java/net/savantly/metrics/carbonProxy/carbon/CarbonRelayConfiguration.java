@@ -15,17 +15,21 @@ import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
 @Configuration
 public class CarbonRelayConfiguration {
 	
+	public static final String CARBON_UDP_RELAY_CHANNEL = "carbonUdpRelayChannel";
+	public static final String CARBON_UDP_AGGREGATOR_CHANNEL = "carbonUdpAggegatorChannel";
+	public static final String CARBON_TCP_RELAY_CHANNEL = "carbonTcpRelayChannel";
+	
 	@Autowired
 	ApplicationConfiguration config;
 
 	
-	@MessagingGateway(defaultRequestChannel = "carbonTcpRelayChannel", name="carbonTcpRelayGateway")
+	@MessagingGateway(defaultRequestChannel = CARBON_TCP_RELAY_CHANNEL, name="carbonTcpRelayGateway")
 	public interface Gateway {
 		String viaTcp(String in);
 	}
 	
 	@Bean
-	@ServiceActivator(inputChannel = "carbonTcpRelayChannel")
+	@ServiceActivator(inputChannel = CARBON_TCP_RELAY_CHANNEL)
 	public MessageHandler tcpOutGate(AbstractClientConnectionFactory connectionFactory) {
 		TcpOutboundGateway gate = new TcpOutboundGateway();
 		gate.setConnectionFactory(connectionFactory);
@@ -35,9 +39,17 @@ public class CarbonRelayConfiguration {
 
 
 	@Bean
-	@ServiceActivator(inputChannel = "carbonUdpRelayChannel")
+	@ServiceActivator(inputChannel = CARBON_UDP_RELAY_CHANNEL)
 	public UnicastSendingMessageHandler unicastSender() {
 		UnicastSendingMessageHandler udpAdapter = new UnicastSendingMessageHandler(config.getCarbonHost(), config.getCarbonPort());
+		udpAdapter.setLoggingEnabled(true);
+		return udpAdapter;
+	}
+	
+	@Bean
+	@ServiceActivator(inputChannel = CARBON_UDP_AGGREGATOR_CHANNEL)
+	public UnicastSendingMessageHandler unicastAggregatorSender() {
+		UnicastSendingMessageHandler udpAdapter = new UnicastSendingMessageHandler(config.getCarbonHost(), config.getCarbonAggregatorPort());
 		udpAdapter.setLoggingEnabled(true);
 		return udpAdapter;
 	}
