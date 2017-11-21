@@ -23,7 +23,6 @@ public class ApplicationConfiguration {
 	private String carbonHost = "localhost";
 	private int pollingFrequency;
 	private int carbonAggregatorPort = 2023;
-	private List<String> aggregatorMatches = new ArrayList<String>();
 	
 
 	@Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -85,15 +84,4 @@ public class ApplicationConfiguration {
 	public void setCarbonAggregatorPort(int carbonAggregatorPort) {
 		this.carbonAggregatorPort = carbonAggregatorPort;
 	}
-
-
-	public List<String> getAggregatorMatches() {
-		return aggregatorMatches;
-	}
-
-
-	public void setAggregatorMatches(List<String> aggregatorMatches) {
-		this.aggregatorMatches = aggregatorMatches;
-	}
-
 }

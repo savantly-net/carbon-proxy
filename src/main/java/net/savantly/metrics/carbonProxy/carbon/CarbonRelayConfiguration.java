@@ -38,7 +38,7 @@ public class CarbonRelayConfiguration {
 
 
 
-	@Bean
+	@Bean("unicastSender")
 	@ServiceActivator(inputChannel = CARBON_UDP_RELAY_CHANNEL)
 	public UnicastSendingMessageHandler unicastSender() {
 		UnicastSendingMessageHandler udpAdapter = new UnicastSendingMessageHandler(config.getCarbonHost(), config.getCarbonPort());
@@ -46,7 +46,7 @@ public class CarbonRelayConfiguration {
 		return udpAdapter;
 	}
 	
-	@Bean
+	@Bean("unicastAggregatorSender")
 	@ServiceActivator(inputChannel = CARBON_UDP_AGGREGATOR_CHANNEL)
 	public UnicastSendingMessageHandler unicastAggregatorSender() {
 		UnicastSendingMessageHandler udpAdapter = new UnicastSendingMessageHandler(config.getCarbonHost(), config.getCarbonAggregatorPort());

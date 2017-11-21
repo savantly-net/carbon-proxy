@@ -1,6 +1,8 @@
 package net.savantly.metrics.carbonProxy.carbon;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,7 +21,6 @@ import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
-import net.savantly.metrics.carbonProxy.ApplicationConfiguration;
 import net.savantly.metrics.carbonProxy.KeyValuePair;
 import net.savantly.metrics.carbonProxy.filter.MetricFilter;
 import net.savantly.metrics.carbonProxy.filter.StringFilterService;
@@ -31,6 +32,9 @@ public class CarbonQueueConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(CarbonQueueConfiguration.class);
 
 	public static final String CARBON_QUEUE_CHANNEL = "carbonQueue";
+	
+	private List<String> aggregatorMatches = new ArrayList<String>();
+	
 	private Map<String, MetricFilter> filters = new HashMap<>();
 	private Map<String, KeyValuePair> replacements = new HashMap<>();
 	private String[] defaultChannels = {CarbonRelayConfiguration.CARBON_UDP_RELAY_CHANNEL};
@@ -39,10 +43,6 @@ public class CarbonQueueConfiguration {
 	@Autowired
 	@Qualifier("singleMetricInputChannel")
 	private MessageChannel metricInputChannel;
-	
-	@Autowired
-	private ApplicationConfiguration appConfig;	
-
 	
 	@Bean("carbonQueue")
 	public QueueChannel carbonQueue(){
@@ -65,7 +65,7 @@ public class CarbonQueueConfiguration {
 	@Router(inputChannel=CARBON_QUEUE_CHANNEL)
 	public String[] carbonQueueRouter(Message<String> message) {
 		String payload = (String) message.getPayload();
-		for (String regex : appConfig.getAggregatorMatches()) {
+		for (String regex : getAggregatorMatches()) {
 			if (payload.matches(regex)) {
 				return this.aggregatorChannels;
 			}
@@ -109,5 +109,13 @@ public class CarbonQueueConfiguration {
 
 	public void setReplacements(Map<String, KeyValuePair> replacements) {
 		this.replacements = replacements;
+	}
+
+	public List<String> getAggregatorMatches() {
+		return aggregatorMatches;
+	}
+
+	public void setAggregatorMatches(List<String> aggregatorMatches) {
+		this.aggregatorMatches = aggregatorMatches;
 	}
 }

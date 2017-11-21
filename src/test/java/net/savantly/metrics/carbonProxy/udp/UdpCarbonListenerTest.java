@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -24,12 +25,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.ip.udp.UnicastSendingMessageHandler;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.savantly.metrics.carbonProxy.Application;
-import net.savantly.metrics.carbonProxy.kafka.KafkaMetricProducer;
 import net.savantly.metrics.carbonProxy.test.utils.CountdownInterceptor;
 import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 
@@ -37,7 +39,7 @@ import net.savantly.metrics.carbonProxy.test.utils.UdpClient;
 @SpringBootTest(classes = {
 		Application.class,
 		UdpCarbonListenerTest.TestConfiguration.class})
-@DirtiesContext(methodMode=MethodMode.AFTER_METHOD)
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class UdpCarbonListenerTest {
 
 	private final static Logger log = LoggerFactory.getLogger(UdpCarbonListenerTest.class);	
@@ -46,8 +48,10 @@ public class UdpCarbonListenerTest {
 	@Value("${carbonProxy.server-port}")
 	int port;
 	
-	@MockBean
-	KafkaMetricProducer producer;
+	@MockBean(name="unicastSender")
+	UnicastSendingMessageHandler handler;
+	@MockBean(name="unicastAggregatorSender")
+	UnicastSendingMessageHandler aggregatorHandler;
 	private CountDownLatch latch;
 	private Answer<Void> voidAnswer = new Answer<Void>(){
 		@Override
@@ -57,11 +61,18 @@ public class UdpCarbonListenerTest {
 		}
 	};
 	
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("kafka.producer.enabled", "false");
+		System.setProperty("kafka.consumer.enabled", "false");
+	}
+	
 	@Before
 	public void before(){
-		// when Kafka producer attempts to connect to the server
+		// when the udp senders attempts to connect to the server
 		// mock the send, and do a countdown on the latch
-		Mockito.doAnswer(voidAnswer).when(producer).send(Mockito.any());
+		Mockito.doAnswer(voidAnswer).when(handler).handleMessage(Mockito.any());
+		Mockito.doAnswer(voidAnswer).when(aggregatorHandler).handleMessage(Mockito.any());
 	}
 	
 	@Test
