@@ -35,16 +35,16 @@ public class PerformanceMonitoringConfiguration {
 	
 	private QueueChannel carbonQueue;
 	private MetricsEndpoint metricsEndpoint;
+
+	@Qualifier("multiMetricInputChannel")
 	private MessageChannel multiMetricInputChannel;
 	
 	@Autowired
 	public PerformanceMonitoringConfiguration(
 			@Qualifier("carbonQueue") QueueChannel carbonQueue,
-			MetricsEndpoint metricsEndpoint,
-			@Qualifier("multiMetricInputChannel") MessageChannel multiMetricInputChannel) {
+			MetricsEndpoint metricsEndpoint) {
 		this.carbonQueue = carbonQueue;
 		this.metricsEndpoint = metricsEndpoint;
-		this.multiMetricInputChannel = multiMetricInputChannel;
 	}
 	
 	@Scheduled(fixedRateString="${carbon.performance.frequencyMs:60000}")
