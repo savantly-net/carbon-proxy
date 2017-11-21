@@ -3,6 +3,7 @@ package net.savantly.metrics.carbonProxy.kafka;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -67,6 +68,12 @@ public class KafkaProcessorTest {
 		log.debug("kafkaServers='{}'", TestConfiguration.kafkaBootstrapServers);
 		// override the property in application.properties
 		System.setProperty("kafka.bootstrap-servers", TestConfiguration.kafkaBootstrapServers);
+	}
+	
+	@AfterClass
+	public static void afterClass() {
+		System.setProperty("kafka.producer.enabled", "false");
+		System.setProperty("kafka.consumer.enabled", "false");
 	}
 
 	@Before

@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -55,11 +54,6 @@ public class UdpCarbonListenerTest {
 		}
 	};
 	
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("kafka.producer.enabled", "false");
-		System.setProperty("kafka.consumer.enabled", "false");
-	}
 	
 	@Before
 	public void before(){
