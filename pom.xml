@@ -29,6 +29,7 @@
 	</parent>
 	<properties>
 		<spring-kafka.version>1.2.2.RELEASE</spring-kafka.version>
+		<jar-name>${project.build.finalName}</jar-name>
 	</properties>
 
 	<licenses>
@@ -231,6 +232,27 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<filtering>true</filtering>
+									<directory>./src/main/resources/linux</directory>
+								</resource>
+							</resources>
+							<outputDirectory>./target/linux</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

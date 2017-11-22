@@ -1,0 +1,42 @@
+#!/bin/bash
+
+HOSTNAME=`hostname -s`
+APP_NAME=carbon-proxy
+JAR_NAME=$APP_NAME.jar
+APP_HOME=`dirname $0`
+JAVA=/usr/bin/java
+PID_FILE=$APP_HOME/$HOSTNAME.pid
+
+
+start () {
+    echo -n $"Starting $APP_NAME: "      
+    nohup $JAVA -jar $APP_HOME/$JAR_NAME > $APP_HOME/log & echo $! > $PID_FILE
+}
+
+stop () {
+	echo -n $"Stopping $APP_NAME: "
+	kill `cat $PID_FILE`
+}
+
+restart () {
+    stop
+    start
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|reload)
+        restart
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload}"
+        exit 1
+esac
+
+exit $?
