@@ -28,6 +28,7 @@ public class CarbonQueueConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(CarbonQueueConfiguration.class);
 
 	public static final String CARBON_FILTER_SERVICE = "carbonFilterService";
+	public static final String CARBON_ITEM_AGGREGATOR = "carbonItemAggregator";
 	
 	private List<String> aggregatorMatches = new ArrayList<String>();
 	
@@ -75,7 +76,9 @@ public class CarbonQueueConfiguration {
 	                        log.debug("aggregated messages: {}", agg);
 	                        return agg;
                         });
-					a.id("carbonItemAggregator");
+					a.expireGroupsUponCompletion(true);
+					a.expireGroupsUponTimeout(true);
+					a.id(CARBON_ITEM_AGGREGATOR);
 				})
 				.channel(AppChannels.CARBON_QUEUE_CHANNEL)
 				.get();

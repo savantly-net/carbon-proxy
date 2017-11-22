@@ -86,7 +86,7 @@ public class PerformanceMonitoringConfiguration {
 			log.info("Enabling load and performance testing");
 		}
 		
-		@Scheduled(fixedRateString="2000")
+		@Scheduled(fixedRateString="2000", initialDelay=30000)
 		public void loadAndPerformanceTest() {
 			String metrics = MetricFactory.mixedMetrics(200);
 			multiMetricInputChannel.send(new GenericMessage<String>(metrics));
