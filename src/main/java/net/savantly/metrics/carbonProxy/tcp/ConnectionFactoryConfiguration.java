@@ -17,8 +17,10 @@ public class ConnectionFactoryConfiguration {
 	
 	@Autowired
 	ApplicationConfiguration config;
+	@SuppressWarnings("rawtypes")
 	@Autowired
 	Serializer serializer;
+	@SuppressWarnings("rawtypes")
 	@Autowired
 	Deserializer deSerializer;
 	

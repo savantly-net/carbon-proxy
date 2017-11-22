@@ -11,19 +11,17 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Splitter;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.integration.dsl.channel.MessageChannels;
-import org.springframework.messaging.MessageChannel;
 
+import net.savantly.metrics.carbonProxy.AppChannels;
 import net.savantly.metrics.carbonProxy.ca.CaMetric;
 import net.savantly.metrics.carbonProxy.rewriter.RewriterService;
 
 @MessageEndpoint("plainTextMessageEndpoint")
 public class PlainTextMessageEndpoint {
+	
 	private static final Logger log = LoggerFactory.getLogger(PlainTextMessageEndpoint.class);
 	private JAXBContext jaxbContext;
 	private Unmarshaller unmarshaller;
@@ -37,23 +35,14 @@ public class PlainTextMessageEndpoint {
 		this.latch = latch;
 	}
 	
-	@Value("${preProcessorQueueChannel.size}")
-	int preProcessorQueueChannelSize;
-	
 	@Autowired
 	public PlainTextMessageEndpoint(RewriterService rewriter) throws JAXBException {
 		this.jaxbContext = JAXBContext.newInstance(CaMetric.class);
 		this.unmarshaller = jaxbContext.createUnmarshaller();
 		this.rewriter = rewriter;
 	}
-	
-	@Bean("preProcessorQueueChannel")
-	public MessageChannel preProcessorQueueChannel(){
-		return MessageChannels.queue(preProcessorQueueChannelSize).get();
-	}
 
-
-	@Transformer(inputChannel = "preProcessorQueueChannel", outputChannel = "multiMetricInputChannel")
+	@Transformer(inputChannel = AppChannels.PRE_PROCESSOR_QUEUE_CHANNEL, outputChannel = AppChannels.MULTI_METRIC_INPUT_CHANNEL)
 	public String convertBytesToString(byte[] bytes) {
 		String str = new String(bytes);
 		log.debug(str);
@@ -63,7 +52,7 @@ public class PlainTextMessageEndpoint {
 	
 
 	
-	@Splitter(inputChannel="multiMetricInputChannel", outputChannel="singleMetricInputChannel")
+	@Splitter(inputChannel=AppChannels.MULTI_METRIC_INPUT_CHANNEL, outputChannel=AppChannels.SINGLE_METRIC_INPUT_CHANNEL)
 	public String[] splitMultiMetricMessage(String multiMetricString){
 		String[] messagePayloads = multiMetricString.split("\\n");
 		if(messagePayloads.length > 1 && log.isDebugEnabled()){

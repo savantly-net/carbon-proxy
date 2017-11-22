@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import net.savantly.metrics.carbonProxy.AppChannels;
 import net.savantly.metrics.schema.MetricDefinition;
 
 @Configuration
@@ -20,13 +20,10 @@ public class KafkaProcessor {
 	private static final Logger log = LoggerFactory.getLogger(KafkaProcessor.class);
 	
 	@Autowired
-	@Qualifier("singleMetricInputChannel")
-	private MessageChannel singleMetricInputChannel;
-	@Autowired
 	@Qualifier("kafkaMetricProducerMessageHandler")
 	private MessageHandler handler;
 
-	@Transformer(inputChannel="singleMetricInputChannel", outputChannel="kafkaHandlerInput")
+	@Transformer(inputChannel=AppChannels.SINGLE_METRIC_INPUT_CHANNEL, outputChannel=AppChannels.KAFKA_HANDLER_INPUT_CHANNEL)
 	public MetricDefinition singleMetricStringToMetricDefinition(String str){
 		try {
 			return new MetricDefinition(str, MetricDefinition.Style.Metric_1_0);
@@ -36,17 +33,9 @@ public class KafkaProcessor {
 		}
 	}
 	
-	@ServiceActivator(inputChannel="kafkaHandlerInput")
+	@ServiceActivator(inputChannel=AppChannels.KAFKA_HANDLER_INPUT_CHANNEL)
 	public void handleKafkaMessage(Message<MetricDefinition> message){
 		handler.handleMessage(message);
 	}
-	
-/*	@Bean
-	public IntegrationFlow kafkaIntegrationFlow() {
-		return IntegrationFlows.from(singleMetricInputChannel)
-				.transform(MessageChannels)
-				.handle(handler)
-				.get();
-	}*/
 
 }

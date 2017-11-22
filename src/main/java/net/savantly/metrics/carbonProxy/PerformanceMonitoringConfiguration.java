@@ -60,14 +60,6 @@ public class PerformanceMonitoringConfiguration {
 		});
 	}
 	
-	@ConditionalOnProperty("carbon.performance.test")
-	@Scheduled(fixedRateString="5000")
-	public void loadAndPerformanceTest() {
-		String metrics = MetricFactory.mixedMetrics(200);
-		this.multiMetricInputChannel.send(new GenericMessage<String>(metrics));
-	}
-	
-
 	public boolean isMonitoring() {
 		return monitoring;
 	}
@@ -82,5 +74,23 @@ public class PerformanceMonitoringConfiguration {
 
 	public void setTest(boolean test) {
 		this.test = test;
+	}
+	
+	@Configuration
+	@ConditionalOnProperty("carbon.performance.test")
+	class LoadAndPerformance {
+		
+		private final Logger log = LoggerFactory.getLogger(LoadAndPerformance.class);
+		
+		public LoadAndPerformance() {
+			log.info("Enabling load and performance testing");
+		}
+		
+		@Scheduled(fixedRateString="2000")
+		public void loadAndPerformanceTest() {
+			String metrics = MetricFactory.mixedMetrics(200);
+			multiMetricInputChannel.send(new GenericMessage<String>(metrics));
+		}
+
 	}
 }

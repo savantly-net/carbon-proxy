@@ -95,10 +95,10 @@ public class UdpCarbonListenerTest {
 	}
 	
 	@Test
-	public void testMulti() throws InterruptedException{
+	public void testMultiLineMessage_heavyload() throws InterruptedException{
 		
 		int threadPoolSize = 10;
-		int loopSize = 10;
+		int loopSize = 30;
 		
 		latch = new CountDownLatch(loopSize);
 		
@@ -114,7 +114,6 @@ public class UdpCarbonListenerTest {
 				}
 			});
 		}
-		
 		
 		try {
 		    log.debug("attempt to shutdown executor");
