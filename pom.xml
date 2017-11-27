@@ -233,28 +233,19 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<filtering>true</filtering>
-									<directory>./src/main/resources/linux</directory>
-								</resource>
-							</resources>
-							<outputDirectory>./target/linux</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-resources-plugin</artifactId> 
+				<executions> <execution> <id>copy-resources</id> <goals> <goal>copy-resources</goal> 
+				</goals> <phase>verify</phase> <configuration> <overwrite>true</overwrite> 
+				<resources> <resource> <filtering>true</filtering> <directory>${project.basedir}/linux</directory> 
+				</resource> </resources> <outputDirectory>${project.build.directory}/linux</outputDirectory> 
+				</configuration> </execution> </executions> </plugin> -->
 		</plugins>
+		<resources>
+			<resource>
+				<filtering>true</filtering>
+				<directory>./src/main/resources</directory>
+			</resource>
+		</resources>
 	</build>
 	<repositories>
 		<repository>
