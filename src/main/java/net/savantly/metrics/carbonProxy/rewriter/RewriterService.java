@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,18 +22,22 @@ public class RewriterService {
 	private final Map<String, PatternPair> compiledPatterns = new HashMap<>();
 	
 	private Map<String, KeyValuePair> replacements = new HashMap<>();
-
-	public Map<String, KeyValuePair> getReplacements() {
-		return replacements;
-	}
-	public void setReplacements(Map<String, KeyValuePair> replacements) {
-		this.replacements = replacements;
+	
+	@PostConstruct
+	public void postConstruct() {
 		compiledPatterns.clear();
 		replacements.keySet().stream().forEach(p -> {
 			log.info("compiling rewriter pattern: {} -> {}", replacements.get(p).getKey(), replacements.get(p).getValue());
 			PatternPair pp = new PatternPair(Pattern.compile(replacements.get(p).getKey()), replacements.get(p).getValue());
 			compiledPatterns.put(p, pp);
 		});
+	}
+
+	public Map<String, KeyValuePair> getReplacements() {
+		return replacements;
+	}
+	public void setReplacements(Map<String, KeyValuePair> replacements) {
+		this.replacements = replacements;
 	}
 	
 	public String[] rewrite(String[] metricString) {
